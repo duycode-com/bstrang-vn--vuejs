@@ -43,6 +43,7 @@
 				<tr
 					v-for="(noteData, noteID, noteIndex) in provider.importNoteList"
 					:key="noteIndex"
+					@click="$router.push({ name: 'ImportNote Details', params: { id: noteID } })"
 				>
 					<td class="text-center">{{ noteIndex + 1 }}</td>
 					<td class="text-right">{{ formatDateTime(noteData.createdAt) }}</td>
@@ -99,6 +100,16 @@ export default {
 			}
 		},
 		confirmDeleteProvider() {
+			if (this.provider.importNoteIDList.length > 0) {
+				this.$notification.open({
+					message: 'Lỗi !!!',
+					description:
+						'Phiếu nhập hàng của nhà cung cấp này vẫn tồn tại. Không thể xóa nhà cung cấp này',
+					placement: 'topRight',
+					duration: 5,
+				})
+				return
+			}
 			const that = this
 			Modal.confirm({
 				title: 'Confirm',

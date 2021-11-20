@@ -169,6 +169,16 @@ export default {
 			}
 		},
 		confirmDeleteCustomer() {
+			if (this.customer.exportNoteIDList.length > 0) {
+				this.$notification.open({
+					message: 'Lỗi !!!',
+					description:
+						'Đơn hàng của khách hàng này vẫn tồn tại. Không thể xóa khách hàng này',
+					placement: 'topRight',
+					duration: 5,
+				})
+				return
+			}
 			const that = this
 			Modal.confirm({
 				title: 'Confirm',

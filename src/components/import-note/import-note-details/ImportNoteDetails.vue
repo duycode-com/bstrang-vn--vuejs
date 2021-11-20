@@ -32,7 +32,7 @@
 	</div>
 	<div class="flex justify-between mb-8">
 		<div>
-			<a-button @click="$router.push({ name: 'ImportNote List', params: {} })">Back</a-button>
+			<a-button @click="$router.back()">Back</a-button>
 		</div>
 		<div v-if="importNote.status === 'Pending'">
 			<a-button

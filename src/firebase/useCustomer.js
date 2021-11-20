@@ -30,9 +30,11 @@ const startRealtimeCustomer = customerID => {
 	const data = ref({})
 	const unSubscribe = onSnapshot(doc(db, 'CUSTOMER', customerID), async customerDoc => {
 		if (!customerDoc.exists()) return
-		const { exportNoteIDList, ...customerData } = customerDoc.data()
+		const { exportNoteIDList } = customerDoc.data()
 
-		const getExportNoteList = exportNoteIDList.map(noteID => getDoc(doc(db, 'EXPORTNOTE', noteID)))
+		const getExportNoteList = exportNoteIDList.map(noteID =>
+			getDoc(doc(db, 'EXPORTNOTE', noteID)),
+		)
 		const exportNoteSnapList = await Promise.all(getExportNoteList)
 
 		const exportNoteList = {}
@@ -42,7 +44,7 @@ const startRealtimeCustomer = customerID => {
 
 		data.value = {
 			customerID,
-			...customerData,
+			...customerDoc.data(),
 			exportNoteList,
 		}
 	})
@@ -109,4 +111,12 @@ const deleteCustomer = async customerID => {
 	return customerID
 }
 
-export { customerList, startRealtimeCustomer, getCustomer, addCustomer, updateCustomer, addPayDebt, deleteCustomer }
+export {
+	customerList,
+	startRealtimeCustomer,
+	getCustomer,
+	addCustomer,
+	updateCustomer,
+	addPayDebt,
+	deleteCustomer,
+}

@@ -28,10 +28,12 @@ onSnapshot(qr, snapshot => {
 const startRealtimeProvider = providerID => {
 	const data = ref({})
 	const unSubscribe = onSnapshot(doc(db, 'PROVIDER', providerID), async providerDoc => {
-        if (!providerDoc.exists()) return
-		const { importNoteIDList, ...providerData } = providerDoc.data()
+		if (!providerDoc.exists()) return
+		const { importNoteIDList } = providerDoc.data()
 
-		const getImportNoteList = importNoteIDList.map(noteID => getDoc(doc(db, 'IMPORTNOTE', noteID)))
+		const getImportNoteList = importNoteIDList.map(noteID =>
+			getDoc(doc(db, 'IMPORTNOTE', noteID)),
+		)
 		const importNoteSnapList = await Promise.all(getImportNoteList)
 
 		const importNoteList = {}
@@ -41,7 +43,7 @@ const startRealtimeProvider = providerID => {
 
 		data.value = {
 			providerID,
-			...providerData,
+			...providerDoc.data(),
 			importNoteList,
 		}
 	})
@@ -97,4 +99,11 @@ const deleteProvider = async providerID => {
 	return providerID
 }
 
-export { providerList, startRealtimeProvider, addProvider, deleteProvider, updateProvider, getProvider }
+export {
+	providerList,
+	startRealtimeProvider,
+	addProvider,
+	deleteProvider,
+	updateProvider,
+	getProvider,
+}
