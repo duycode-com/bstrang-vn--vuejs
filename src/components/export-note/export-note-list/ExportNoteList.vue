@@ -1,6 +1,9 @@
 <template>
 	<div class="flex justify-end mb-2">
-		<a-button type="primary" @click="$router.push({ name: 'ExportNote Create Modify', params: {} })">
+		<a-button
+			type="primary"
+			@click="$router.push({ name: 'ExportNote Create Modify', params: {} })"
+		>
 			<template #icon>
 				<PlusOutlined />
 			</template>
@@ -14,11 +17,10 @@
 					<th>#</th>
 					<th>KH</th>
 					<th>Ship</th>
-					<th>Thanh toán</th>
+					<th>T.Toán</th>
 					<th>Tổng</th>
 					<th>Nợ</th>
-					<th>Status</th>
-					<th>Created At</th>
+					<th>Ngày</th>
 				</tr>
 			</thead>
 			<tbody class="text-right">
@@ -29,14 +31,18 @@
 					v-for="(note, noteID, noteIndex) in exportNoteList"
 					:key="noteIndex"
 					@click="$router.push({ name: 'ExportNote Details', params: { id: noteID } })"
+					:style="note.status === 'Pending' ? 'opacity: 0.7' : ''"
 				>
 					<td class="text-center">{{ noteIndex + 1 }}</td>
 					<td class="text-left">{{ note.customer?.customerName || '-' }}</td>
 					<td>{{ note.shipping.unit }}</td>
 					<td>{{ note.payment.method }}</td>
 					<td>{{ note.finance.revenue }}</td>
-					<td>{{ note.finance.revenue - note.payment.alreadyPaid }}</td>
-					<td>{{ note.status }}</td>
+					<td
+						:style="note.finance.revenue > note.payment.alreadyPaid ? 'color: red' : ''"
+					>
+						{{ note.finance.revenue - note.payment.alreadyPaid }}
+					</td>
 					<td>{{ formatDateTime(note.createdAt) }}</td>
 				</tr>
 			</tbody>

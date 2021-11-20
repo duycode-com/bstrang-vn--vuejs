@@ -1,6 +1,6 @@
 <template>
 	<div class="flex items-center mb-2">
-		<div class="w-120px flex-none">Nguồn: </div>
+		<div class="w-16 flex-none">Nguồn:</div>
 		<InputSearchProvider v-model:provider="importNote.provider" class="flex-auto" />
 	</div>
 	<div class="wrapper-table mb-1">
@@ -21,7 +21,7 @@
 		<ModalAddStockIn ref="modalAddStockIn" @actionStockIn="actionStockIn" />
 	</div>
 	<div class="flex items-center mb-2">
-		<div class="w-120px flex-none">Shipping Cost</div>
+		<div class="w-16 flex-none">Shipping:</div>
 		<a-input
 			v-model:value.number="importNote.shipping.cost"
 			addon-after=".000 vnđ"
@@ -35,14 +35,19 @@
 			Back
 		</a-button>
 		<div>
-			<a-button :loading="loadingActionImportNote" @click="startCreateImportNote" type="primary">
+			<a-button
+				v-if="!importNote.importNoteID"
+				:loading="loadingActionImportNote"
+				@click="startCreateImportNote"
+				type="primary"
+			>
 				Tạo Phiếu Nhập Mới
 			</a-button>
 			<a-button
 				v-if="importNote.importNoteID"
 				@click="startUpdateImportNote"
 				:loading="loadingActionImportNote"
-				class="ml-2"
+				type="primary"
 			>
 				Cập Nhật Phiếu
 			</a-button>
@@ -56,7 +61,11 @@ import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { goodsList } from '@/firebase/useWarehouse'
-import { startRealtimeImportNote, addImportNotePending, updateImportNotePending } from '@/firebase/useImportNote'
+import {
+	startRealtimeImportNote,
+	addImportNotePending,
+	updateImportNotePending,
+} from '@/firebase/useImportNote'
 import InputSearchProvider from '@/components/common/InputSearchProvider.vue'
 import ImportNoteTableGoods from '@/components/import-note/ImportNoteTableGoods.vue'
 import ModalAddStockIn from '@/components/import-note/import-note-create-modify/ModalAddStockIn.vue'
@@ -127,7 +136,9 @@ export default {
 
 			if (!this.importNote.stockIn[goodsID]) this.importNote.stockIn[goodsID] = {}
 			const batch = `${expiryDate}-${costPrice}`
-			if (!this.importNote.stockIn[goodsID][batch]) this.importNote.stockIn[goodsID][batch] = { quantity: 0 }
+			if (!this.importNote.stockIn[goodsID][batch]) {
+				this.importNote.stockIn[goodsID][batch] = { quantity: 0 }
+			}
 			this.importNote.stockIn[goodsID][batch].quantity += quantity
 		},
 
@@ -166,7 +177,10 @@ export default {
 		async startUpdateImportNote() {
 			try {
 				this.loadingActionImportNote = true
-				const noteID = await updateImportNotePending(this.importNote.importNoteID, this.importNote)
+				const noteID = await updateImportNotePending(
+					this.importNote.importNoteID,
+					this.importNote,
+				)
 				message.success('Cập nhật phiếu nhập hàng thành công !!!', 2)
 				this.$router.push({ name: 'ImportNote Details', params: { id: noteID } })
 			} catch (error) {
@@ -179,12 +193,3 @@ export default {
 	},
 }
 </script>
-
-<style lang="scss" scoped>
-.wrapper-table {
-	overflow-x: scroll;
-}
-.w-120px {
-	width: 120px;
-}
-</style>

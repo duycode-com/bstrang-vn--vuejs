@@ -6,9 +6,6 @@
 				<span class="menu-item">
 					<router-link to="/dashboard">Dashboard</router-link>
 				</span>
-				<span class="menu-item">
-					<router-link to="/store">Cửa hàng</router-link>
-				</span>
 			</div>
 		</div>
 		<div>

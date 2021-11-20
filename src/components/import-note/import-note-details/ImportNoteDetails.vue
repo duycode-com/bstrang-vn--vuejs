@@ -5,23 +5,27 @@
 	</div>
 	<div class="flex items-center mb-2">
 		<div class="flex-none w-20">Status:</div>
-		<a-tag :color="importNote.status === 'Pending' ? 'orange' : '#87d068'">{{ importNote.status }}</a-tag>
+		<a-tag :color="importNote.status === 'Pending' ? 'orange' : '#87d068'">
+			{{ importNote.status }}
+		</a-tag>
 	</div>
 	<div class="flex justify-end mb-2">
-		<a-popconfirm
+		<a-button
 			v-if="importNote.status === 'Pending'"
-			title="Warning !!! Are you sure delete this order?"
-			@confirm="startDeleteImportNote(importNote.importNoteID)"
+			@click="confirmDeleteImportNote"
+			:loading="loadingDeleteImportNote"
+			type="dashed"
 		>
-			<a-button :loading="loadingDeleteImportNote" type="dashed">Xóa phiếu</a-button>
-		</a-popconfirm>
-		<a-popconfirm
+			Xóa phiếu
+		</a-button>
+		<a-button
 			v-if="importNote.status === 'Success'"
-			title="Warning !!!Bạn có chắc chắn muốn hoàn trả phiếu nhập hàng này?"
-			@confirm="startRefundImportNote(importNote.importNoteID)"
+			@click="confirmRefundImportNote"
+			:loading="loadingRefundImportNote"
+			type="dashed"
 		>
-			<a-button :loading="loadingRefundImportNote" type="dashed">Hoàn trả phiếu</a-button>
-		</a-popconfirm>
+			Hoàn trả phiếu
+		</a-button>
 	</div>
 	<div class="wrapper-table mb-4">
 		<ImportNoteTableGoods :importNote="importNote" />
@@ -32,9 +36,14 @@
 		</div>
 		<div v-if="importNote.status === 'Pending'">
 			<a-button
-				@click="$router.push({ name: 'ImportNote Create Modify', params: { id: importNote.importNoteID } })"
+				@click="
+					$router.push({
+						name: 'ImportNote Create Modify',
+						params: { id: importNote.importNoteID },
+					})
+				"
 				danger
-				class="ml-5"
+				class="ml-2"
 			>
 				Sửa phiếu
 			</a-button>
@@ -42,18 +51,19 @@
 				:loading="loadingProcessImportNote"
 				@click="startProcessImportNote(importNote.importNoteID)"
 				type="primary"
-				class="ml-5"
+				class="ml-2"
 			>
-				Nhập thuốc vào tủ
+				Nhập thuốc
 			</a-button>
 		</div>
 	</div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, createVNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import {
 	startRealtimeImportNote,
 	deleteImportNote,
@@ -112,13 +122,35 @@ export default {
 			try {
 				await deleteImportNote(exportNoteID)
 				message.success('Delete export note success !!!', 2)
-				// this.$router.push({ name: 'ImportNote List', params: {} })
+				this.$router.push({ name: 'ImportNote List', params: {} })
 			} catch (error) {
 				console.error(error)
 				message.error(error.toString(), 10)
 			} finally {
 				this.loadingDeleteImportNote = false
 			}
+		},
+		confirmDeleteImportNote() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn xóa phiếu này ?',
+				onOk() {
+					that.startDeleteImportNote(that.importNote.importNoteID)
+				},
+			})
+		},
+		confirmRefundImportNote() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn hoàn trả phiếu này ?',
+				onOk() {
+					that.startRefundImportNote(that.importNote.importNoteID)
+				},
+			})
 		},
 	},
 }

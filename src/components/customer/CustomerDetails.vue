@@ -17,7 +17,9 @@
 				<div>{{ customer.address }}</div>
 			</div>
 			<div>
-				<a-button @click="$refs.modalCustomerCreateModify.openModal(customer.customerID)">Edit</a-button>
+				<a-button @click="$refs.modalCustomerCreateModify.openModal(customer.customerID)">
+					Edit
+				</a-button>
 				<ModalCustomerCreateModify ref="modalCustomerCreateModify" />
 			</div>
 		</div>
@@ -26,28 +28,45 @@
 			<div class="text-3xl">{{ customer.finance?.debt }}</div>
 		</div>
 		<div>
-			<a-popconfirm @confirm="startPayDebt" @cancel="payDebtMoney = 0">
-				<template #title>
-					<p>Nhập số tiền trả nợ ?</p>
-					<a-input v-model:value.number="payDebtMoney" placeholder="Payup Money" />
-				</template>
-				<a-button size="large" type="primary">Trả nợ</a-button>
-			</a-popconfirm>
+			<a-button type="primary" @click="visiblePayDebt = true">
+				Trả nợ
+			</a-button>
+			<a-modal
+				v-model:visible="visiblePayDebt"
+				@ok="startPayDebt"
+				:confirm-loading="loadingPayDebt"
+				title="Trả nợ"
+			>
+				<div class="flex items-center mb-2">
+					<div class="w-20 flex-none">Số tiền</div>
+					<a-input
+						v-model:value.number="numberPayDebt"
+						type="number"
+						addon-after=".000 vnđ"
+						class="flex-auto"
+					/>
+				</div>
+			</a-modal>
 		</div>
 	</div>
-	<div class="mt-8 font-bold">Danh sách đơn hàng</div>
+	<div class="mt-4 mb-1 font-bold">Danh sách đơn hàng</div>
 	<div class="wrapper-table">
 		<table class="table">
 			<thead>
 				<th>#</th>
 				<th>Ngày</th>
-				<th>HT Thanh Toán</th>
-				<th>Đã thanh toán</th>
-				<th>Tổng đơn hàng</th>
+				<th>T.Toán</th>
+				<th>Đã trả</th>
+				<th>Tổng</th>
 				<th>Nợ</th>
 			</thead>
 			<tbody class="text-right">
-				<tr v-if="!customer.exportNoteList || Object.keys(customer.exportNoteList).length === 0">
+				<tr
+					v-if="
+						!customer.exportNoteList ||
+							Object.keys(customer.exportNoteList).length === 0
+					"
+				>
 					<td class="text-center" colspan="7">No data available in table</td>
 				</tr>
 				<tr
@@ -60,7 +79,9 @@
 					<td class="text-left">{{ noteData.payment?.method }}</td>
 					<td>{{ noteData.payment?.alreadyPaid }}</td>
 					<td>{{ noteData.finance.revenue }}</td>
-					<td class="font-bold">{{ noteData.finance.revenue - noteData.payment?.alreadyPaid }}</td>
+					<td class="font-bold">
+						{{ noteData.finance.revenue - noteData.payment?.alreadyPaid }}
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -87,19 +108,17 @@
 	</div>
 	<div class="flex justify-between mt-4">
 		<a-button @click="$router.go(-1)">Back</a-button>
-		<a-popconfirm
-			title="Warning !!! Are you sure delete this customer?"
-			@confirm="startDeleteCustomer(customer.customerID)"
-		>
-			<a-button type="dashed">Delete</a-button>
-		</a-popconfirm>
+		<a-button @click="confirmDeleteCustomer" :loading="loadingDeleteCustomer" type="dashed">
+			Delete
+		</a-button>
 	</div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, createVNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import { startRealtimeCustomer, addPayDebt, deleteCustomer } from '@/firebase/useCustomer'
 import ModalCustomerCreateModify from '@/components/common/ModalCustomerCreateModify.vue'
 import { MyFormatDateTime } from '@/utils/convert'
@@ -112,7 +131,10 @@ export default {
 		return {
 			customer: realtimeCustomer.data,
 			realtimeCustomer,
-			payDebtMoney: ref(0),
+			numberPayDebt: ref(0),
+			loadingPayDebt: ref(false),
+			visiblePayDebt: ref(false),
+			loadingDeleteCustomer: ref(false),
 		}
 	},
 	unmounted() {
@@ -120,14 +142,20 @@ export default {
 	},
 	methods: {
 		async startPayDebt() {
+			this.loadingPayDebt = true
 			try {
-				await addPayDebt(this.customer.customerID, this.payDebtMoney)
-				message.loading(`${this.customer.customerName} has just pay debt ${this.payDebtMoney}`)
+				await addPayDebt(this.customer.customerID, this.numberPayDebt)
+				message.success(`Trả nợ thành công: ${this.numberPayDebt}`, 2)
+				this.visiblePayDebt = false
 			} catch (error) {
-				message.error('Pay debt error')
+				console.error(error)
+				message.error(error.toString(), 10)
+			} finally {
+				this.loadingPayDebt = false
 			}
 		},
 		async startDeleteCustomer() {
+			this.loadingDeleteCustomer = true
 			try {
 				this.realtimeCustomer.unSubscribe()
 				await deleteCustomer(this.customer.customerID)
@@ -135,7 +163,21 @@ export default {
 				message.success('Delete customer success !!!', 2)
 			} catch (error) {
 				console.error(error)
+				message.error(error.toString(), 10)
+			} finally {
+				this.loadingDeleteCustomer = false
 			}
+		},
+		confirmDeleteCustomer() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn xóa khách hàng này ?',
+				onOk() {
+					that.startDeleteCustomer()
+				},
+			})
 		},
 		formatDateTime(time) {
 			return MyFormatDateTime(time, 'DD/MM/YY')

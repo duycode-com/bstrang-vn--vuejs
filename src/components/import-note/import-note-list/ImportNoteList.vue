@@ -1,6 +1,9 @@
 <template>
 	<div class="flex justify-end mb-2">
-		<a-button type="primary" @click="$router.push({ name: 'ImportNote Create Modify', params: {} })">
+		<a-button
+			type="primary"
+			@click="$router.push({ name: 'ImportNote Create Modify', params: {} })"
+		>
 			<template #icon>
 				<PlusOutlined />
 			</template>
@@ -15,12 +18,11 @@
 					<th rowspan="2">Nguồn</th>
 					<th colspan="2">Hàng Nhập</th>
 					<th rowspan="2">Tổng</th>
-					<th rowspan="2">Status</th>
 					<th rowspan="2">Ngày</th>
 				</tr>
 				<tr>
-					<th>Name</th>
-					<th>Quantity</th>
+					<th>Tên</th>
+					<th>SL</th>
 				</tr>
 			</thead>
 			<tbody style="text-align:right">
@@ -31,12 +33,19 @@
 					<tr
 						v-for="(stock, goodsID, stockIndex) in note.stockIn"
 						:key="stockIndex"
-						@click="$router.push({ name: 'ImportNote Details', params: { id: noteID } })"
+						@click="
+							$router.push({ name: 'ImportNote Details', params: { id: noteID } })
+						"
+						:style="note.status === 'Pending' ? 'opacity: 0.7' : ''"
 					>
 						<td v-if="stockIndex === 0" :rowspan="Object.keys(note.stockIn).length">
 							{{ noteIndex + 1 }}
 						</td>
-						<td v-if="stockIndex === 0" :rowspan="Object.keys(note.stockIn).length" style="text-align:left">
+						<td
+							v-if="stockIndex === 0"
+							:rowspan="Object.keys(note.stockIn).length"
+							style="text-align:left"
+						>
 							{{ note.provider?.providerName || '-' }}
 						</td>
 						<td style="text-align:left">{{ goodsList[goodsID]?.goodsName || '-' }}</td>
@@ -47,9 +56,6 @@
 						</td>
 						<td v-if="stockIndex === 0" :rowspan="Object.keys(note.stockIn).length">
 							{{ note.finance?.totalMoney }}
-						</td>
-						<td v-if="stockIndex === 0" :rowspan="Object.keys(note.stockIn).length">
-							{{ note.status }}
 						</td>
 						<td v-if="stockIndex === 0" :rowspan="Object.keys(note.stockIn).length">
 							{{ formatDateTime(note.createdAt) }}

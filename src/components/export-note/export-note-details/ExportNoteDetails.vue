@@ -7,25 +7,29 @@
 	<div class="flex items-center mb-2">
 		<div class="flex-none w-20">Status</div>
 		<div class="w-3">:</div>
-		<a-tag :color="exportNote.status === 'Pending' ? 'orange' : '#87d068'">{{ exportNote.status }}</a-tag>
+		<a-tag :color="exportNote.status === 'Pending' ? 'orange' : '#87d068'">
+			{{ exportNote.status }}
+		</a-tag>
 	</div>
 	<ExportNoteInvoices :exportNote="exportNote" ref="exportNoteInvoices" />
 	<div class="flex justify-between mb-2">
 		<a-button @click="$refs.exportNoteInvoices.openModal(exportNote)">Hóa Đơn</a-button>
-		<a-popconfirm
+		<a-button
 			v-if="exportNote.status === 'Success'"
-			title="Warning !!! Bạn chắc chắn muốn hoàn trả đơn hàng này ?"
-			@confirm="startRefundExportNote(exportNote.exportNoteID)"
+			@click="confirmRefundExportNote"
+			:loading="loadingRefundExportNote"
+			type="dashed"
 		>
-			<a-button type="dashed">Hoàn trả đơn hàng</a-button>
-		</a-popconfirm>
-		<a-popconfirm
+			Hoàn trả đơn hàng
+		</a-button>
+		<a-button
 			v-if="exportNote.status === 'Pending'"
-			title="Warning !!! Bạn có chắc muốn xóa đơn hàng này?"
-			@confirm="startDeleteExportNote(exportNote.exportNoteID)"
+			@click="confirmDeleteExportNote"
+			:loading="loadingDeleteExportNote"
+			type="dashed"
 		>
-			<a-button type="dashed">Xóa đơn hàng</a-button>
-		</a-popconfirm>
+			Xóa đơn hàng
+		</a-button>
 	</div>
 
 	<div class="mb-2">
@@ -36,16 +40,30 @@
 		<a-button @click="$router.go(-1)">Back</a-button>
 		<div v-if="exportNote.status === 'Pending'">
 			<a-button
-				@click="$router.push({ name: 'ExportNote Create Modify', params: { id: exportNote.exportNoteID } })"
+				@click="
+					$router.push({
+						name: 'ExportNote Create Modify',
+						params: { id: exportNote.exportNoteID },
+					})
+				"
 				danger
 			>
 				Sửa đơn hàng
 			</a-button>
-			<a-button @click="startProcessExportNote(exportNote.exportNoteID)" type="primary" class="ml-5">
-				Bắt đầu gửi hàng
+			<a-button
+				@click="startProcessExportNote(exportNote.exportNoteID)"
+				type="primary"
+				class="ml-2"
+			>
+				Gửi hàng
 			</a-button>
 		</div>
-		<div v-if="exportNote.status === 'Success' && exportNote.payment?.alreadyPaid !== exportNote.finance?.revenue">
+		<div
+			v-if="
+				exportNote.status === 'Success' &&
+					exportNote.payment?.alreadyPaid !== exportNote.finance?.revenue
+			"
+		>
 			<a-button type="primary" @click="visiblePayDebt = true">
 				Trả nợ
 			</a-button>
@@ -70,9 +88,10 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, createVNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import {
 	startRealtimeExportNote,
 	processExportNote,
@@ -109,7 +128,8 @@ export default {
 	},
 	watch: {
 		exportNote() {
-			this.numberPayDebt = this.exportNote.finance?.revenue - this.exportNote.payment?.alreadyPaid
+			this.numberPayDebt =
+				this.exportNote.finance?.revenue - this.exportNote.payment?.alreadyPaid
 		},
 	},
 	methods: {
@@ -142,7 +162,7 @@ export default {
 			this.loadingPayDebt = true
 			try {
 				await payDebtExportNote(this.exportNote.exportNoteID, this.numberPayDebt)
-				message.success('Trả nợ đơn hàng thành công !!!', 2)
+				message.success(`Trả nợ đơn hàng thành công : ${this.numberPayDebt} !!!`, 2)
 				this.visiblePayDebt = false
 			} catch (error) {
 				console.error(error)
@@ -163,6 +183,28 @@ export default {
 			} finally {
 				this.loadingDeleteExportNote = false
 			}
+		},
+		confirmRefundExportNote() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn hoàn trả đơn hàng này ?',
+				onOk() {
+					that.startRefundExportNote(that.exportNote.exportNoteID)
+				},
+			})
+		},
+		confirmDeleteExportNote() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn xóa đơn hàng này ?',
+				onOk() {
+					that.startDeleteExportNote(that.exportNote.exportNoteID)
+				},
+			})
 		},
 	},
 }

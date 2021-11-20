@@ -1,5 +1,6 @@
 table {
 	width: 100%;
+    font-size: 12px;
 	border-collapse: collapse;
 	box-shadow: 4px 4px 8px #aaa;
 	thead {
@@ -7,7 +8,7 @@ table {
 	}
 	th,
 	td {
-		padding: 0.2rem 0.5rem;
+		padding: 0.2rem 0.2rem;
 		border: 1px solid #d9d9d9;
 		line-height: 2;
 	}

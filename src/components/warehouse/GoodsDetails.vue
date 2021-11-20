@@ -64,22 +64,34 @@
 					<td class="text-left">{{ note.provider.providerName }}</td>
 					<td>{{ formatDateTime(note.createdAt) }}</td>
 					<td>
-						<p v-for="({}, batch, batchIndex) in note.stockIn[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="({}, batch, batchIndex) in note.stockIn[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ formatDateTime(Number(batch.split('-')[0])) }}
 						</p>
 					</td>
 					<td>
-						<p v-for="({}, batch, batchIndex) in note.stockIn[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="({}, batch, batchIndex) in note.stockIn[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ batch.split('-')[1] }}
 						</p>
 					</td>
 					<td>
-						<p v-for="(stock, batch, batchIndex) in note.stockIn[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="(stock, batch, batchIndex) in note.stockIn[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ stock.quantity }}
 						</p>
 					</td>
 					<td>
-						<p v-for="(stock, batch, batchIndex) in note.stockIn[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="(stock, batch, batchIndex) in note.stockIn[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ stock.quantity * Number(batch.split('-')[1]) }}
 						</p>
 					</td>
@@ -110,22 +122,34 @@
 					<td class="text-left">{{ note.customer.customerName }}</td>
 					<td>{{ formatDateTime(note.createdAt) }}</td>
 					<td>
-						<p v-for="({}, batch, batchIndex) in note.stockOut[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="({}, batch, batchIndex) in note.stockOut[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ formatDateTime(Number(batch.split('-')[0])) }}
 						</p>
 					</td>
 					<td>
-						<p v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ stock.actualPrice }}
 						</p>
 					</td>
 					<td>
-						<p v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ stock.quantity }}
 						</p>
 					</td>
 					<td>
-						<p v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]" :key="batchIndex">
+						<p
+							v-for="(stock, batch, batchIndex) in note.stockOut[goods.goodsID]"
+							:key="batchIndex"
+						>
 							{{ stock.actualPrice * stock.quantity }}
 						</p>
 					</td>
@@ -161,19 +185,22 @@ export default {
 	},
 	computed: {
 		totalQuantity() {
-			return Object.values(this.goods?.stockAvail || {}).reduce((acc, { quantity }) => acc + quantity, 0)
+			return Object.values(this.goods?.stockAvail || {}).reduce(
+				(acc, { quantity }) => acc + quantity,
+				0,
+			)
 		},
 		totalPriceImport() {
-			return Object.entries(this.goods.stockAvail || {}).reduce((acc, [batch, { quantity }]) => {
-				const each = quantity * Number(batch.split('-')[1])
-				return acc + each
-			}, 0)
+			return Object.entries(this.goods.stockAvail || {}).reduce(
+				(acc, [batch, { quantity }]) => {
+					const each = quantity * Number(batch.split('-')[1])
+					return acc + each
+				},
+				0,
+			)
 		},
 	},
 	methods: {
-		formatDateTime(time) {
-			return MyFormatDateTime(time, 'DD/MM/YY')
-		},
 		showExportNoteDetails(noteID) {
 			this.$router.push({ name: 'ExportNote Details', params: { id: noteID } })
 		},
@@ -206,6 +233,9 @@ export default {
 					start()
 				},
 			})
+		},
+		formatDateTime(time) {
+			return MyFormatDateTime(time, 'MM/YY')
 		},
 	},
 }

@@ -23,7 +23,8 @@ export default {
 .ant-form-item {
 	margin-bottom: 0.5rem;
 }
-.ant-input {
+.ant-input,
+.a-select-option {
 	font-size: 16px;
 }
 </style>

@@ -10,12 +10,23 @@
 			<th v-if="editable">Action</th>
 		</thead>
 		<tbody class="text-right">
-			<template v-for="(batchList, goodsID, stockIndex) in importNote.stockIn" :key="stockIndex">
+			<template
+				v-for="(batchList, goodsID, stockIndex) in importNote.stockIn"
+				:key="stockIndex"
+			>
 				<tr v-for="({ quantity }, batchKey, batchIndex) in batchList" :key="batchIndex">
-					<td class="text-center" v-if="batchIndex === 0" :rowspan="Object.keys(batchList).length">
+					<td
+						class="text-center"
+						v-if="batchIndex === 0"
+						:rowspan="Object.keys(batchList).length"
+					>
 						{{ stockIndex + 1 }}
 					</td>
-					<td class="text-left" v-if="batchIndex === 0" :rowspan="Object.keys(batchList).length">
+					<td
+						class="text-left"
+						v-if="batchIndex === 0"
+						:rowspan="Object.keys(batchList).length"
+					>
 						{{ goodsList[goodsID]?.goodsName }}
 					</td>
 					<td>{{ formatDateTime(Number(batchKey.split('-')[0])) }}</td>
@@ -29,13 +40,10 @@
 								twoToneColor="orange"
 								class="delete-row-goods"
 							/>
-							<a-popconfirm
-								@confirm="$emit('removeStockIn', { goodsID, batchKey })"
-								title="Are you sure delete this task?"
-								class="ml-4"
-							>
-								<DeleteTwoTone twoToneColor="#f5222d" />
-							</a-popconfirm>
+							<DeleteTwoTone
+								@click="removeItem(goodsID, batchKey)"
+								twoToneColor="#f5222d"
+							/>
 						</div>
 					</td>
 				</tr>
@@ -55,7 +63,9 @@
 </template>
 
 <script>
-import { EditTwoTone, DeleteTwoTone } from '@ant-design/icons-vue'
+import { createVNode } from 'vue'
+import { EditTwoTone, DeleteTwoTone, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { Modal } from 'ant-design-vue'
 import { goodsList } from '@/firebase/useWarehouse'
 import { MyFormatDateTime } from '@/utils/convert'
 
@@ -69,6 +79,17 @@ export default {
 		return { goodsList }
 	},
 	methods: {
+		removeItem(goodsID, batchKey) {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn xóa sản phẩm này ?',
+				onOk() {
+					that.$emit('removeStockIn', { goodsID, batchKey })
+				},
+			})
+		},
 		formatDateTime(time) {
 			return MyFormatDateTime(time, 'DD/MM/YY')
 		},

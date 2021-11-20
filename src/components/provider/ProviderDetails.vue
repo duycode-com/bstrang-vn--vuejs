@@ -16,12 +16,14 @@
 			<div>{{ provider.address }}</div>
 		</div>
 		<div>
-			<a-button @click="$refs.modalProviderCreateModify.openModal(provider.providerID)">Edit</a-button>
+			<a-button @click="$refs.modalProviderCreateModify.openModal(provider.providerID)">
+				Edit
+			</a-button>
 			<ModalProviderCreateModify ref="modalProviderCreateModify" />
 		</div>
 	</div>
 
-	<div class="mt-8 font-bold">Import List</div>
+	<div class="mt-4 mb-1 font-bold">Danh sách phiếu nhập hàng</div>
 	<div class="wrapper-table">
 		<table class="table">
 			<thead>
@@ -30,10 +32,18 @@
 				<th>Tổng tiền</th>
 			</thead>
 			<tbody>
-				<tr v-if="!provider.importNoteList || Object.keys(provider.importNoteList).length === 0">
+				<tr
+					v-if="
+						!provider.importNoteList ||
+							Object.keys(provider.importNoteList).length === 0
+					"
+				>
 					<td class="text-center" colspan="4">No data available in table</td>
 				</tr>
-				<tr v-for="(noteData, noteID, noteIndex) in provider.importNoteList" :key="noteIndex">
+				<tr
+					v-for="(noteData, noteID, noteIndex) in provider.importNoteList"
+					:key="noteIndex"
+				>
 					<td class="text-center">{{ noteIndex + 1 }}</td>
 					<td class="text-right">{{ formatDateTime(noteData.createdAt) }}</td>
 					<td class="text-right font-bold">{{ noteData.finance.totalMoney }}</td>
@@ -43,19 +53,17 @@
 	</div>
 	<div class="flex justify-between mt-4">
 		<a-button @click="$router.go(-1)">Back</a-button>
-		<a-popconfirm
-			title="Warning !!! Are you sure delete this provider?"
-			@confirm="startDeleteProvider(provider.providerID)"
-		>
-			<a-button type="dashed">Delete</a-button>
-		</a-popconfirm>
+		<a-button @click="confirmDeleteProvider" :loading="loadingDeleteProvider" type="dashed">
+			Delete
+		</a-button>
 	</div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, createVNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import { startRealtimeProvider, deleteProvider } from '@/firebase/useProvider'
 import ModalProviderCreateModify from '@/components/common/ModalProviderCreateModify.vue'
 import { MyFormatDateTime } from '@/utils/convert'
@@ -65,11 +73,11 @@ export default {
 	setup() {
 		const route = useRoute()
 		const realtimeProvider = startRealtimeProvider(route.params.id)
-		console.log(realtimeProvider.data)
 		return {
 			provider: realtimeProvider.data,
 			realtimeProvider,
 			payDebtMoney: ref(0),
+			loadingDeleteProvider: ref(false),
 		}
 	},
 	unmounted() {
@@ -77,6 +85,7 @@ export default {
 	},
 	methods: {
 		async startDeleteProvider() {
+			this.loadingDeleteProvider = true
 			try {
 				this.realtimeProvider.unSubscribe()
 				await deleteProvider(this.provider.providerID)
@@ -84,7 +93,21 @@ export default {
 				message.success('Delete provider success !!!', 2)
 			} catch (error) {
 				console.error(error)
+				message.error(error.toString(), 10)
+			} finally {
+				this.loadingDeleteProvider = false
 			}
+		},
+		confirmDeleteProvider() {
+			const that = this
+			Modal.confirm({
+				title: 'Confirm',
+				icon: createVNode(ExclamationCircleOutlined),
+				content: 'Bạn có chắc chắn muốn xóa nhà cung cấp này ?',
+				onOk() {
+					that.startDeleteProvider()
+				},
+			})
 		},
 		formatDateTime(time) {
 			return MyFormatDateTime(time, 'DD/MM/YY')

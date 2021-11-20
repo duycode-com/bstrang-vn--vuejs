@@ -17,11 +17,10 @@ const UTILS_GOODSTYPE = {
 
 const UTILS_EXPORTNOTES = {
 	shipping: {
-		units: ['Viettel Post', 'Shoppee', 'GHTK', 'Ship Thường'],
-		method: ['Bank Transfer', 'COD'],
+		units: ['VTP', 'Shopee', 'GHTK', 'Thường'],
 	},
 	payment: {
-		method: ['Bank Transfer', 'COD'],
+		method: ['CK', 'COD'],
 	},
 	status: ['Pending', 'Success'],
 }

@@ -1,6 +1,6 @@
 <template>
 	<div class="flex items-center mb-2">
-		<div class="w-120px flex-none">Khách hàng :</div>
+		<div class="w-8 flex-none">KH :</div>
 		<InputSearchCustomer v-model:customer="exportNote.customer" class="flex-auto" />
 	</div>
 	<div class="wrapper-table mb-1">
@@ -21,8 +21,8 @@
 		<ModalAddStockOut ref="modalAddStockOut" @actionStockOut="actionStockOut" />
 	</div>
 	<div class="flex items-center mb-4">
-		<div class="w-120px flex-none">Shipping cost</div>
-		<a-radio-group v-model:value="exportNote.shipping.whoPays" class="flex-auto">
+		<div class="w-10 flex-none">Ship</div>
+		<a-radio-group v-model:value="exportNote.shipping.whoPays" class="flex-none">
 			<a-radio value="Seller">Seller</a-radio>
 			<a-radio value="Buyer">Buyer</a-radio>
 		</a-radio-group>
@@ -30,31 +30,41 @@
 			v-model:value.number="exportNote.shipping.cost"
 			addon-after=".000 vnđ"
 			type="number"
-			class="w-2/4 flex-none"
+			class="flex-auto"
 		></a-input>
 	</div>
 	<div class="flex items-center mb-4">
 		<div class="w-120px flex-none">Shipping Unit</div>
 		<a-radio-group v-model:value="exportNote.shipping.unit" class="flex-auto">
-			<a-radio v-for="(unit, index) in UTILS_EXPORTNOTES.shipping.units" :key="index" :value="unit">
+			<a-radio
+				v-for="(unit, index) in UTILS_EXPORTNOTES.shipping.units"
+				:key="index"
+				:value="unit"
+			>
 				{{ unit }}
 			</a-radio>
 		</a-radio-group>
 	</div>
 	<div class="flex items-center mb-4">
-		<div class="w-120px flex-none">KH đã thanh toán</div>
-		<a-button @click="exportNote.payment.alreadyPaid = exportNote.finance?.revenue">Thanh toán hết</a-button>
+		<div class="w-14 flex-none">KH trả</div>
+		<a-button @click="exportNote.payment.alreadyPaid = exportNote.finance?.revenue">
+			T.Toán hết
+		</a-button>
 		<a-input
 			v-model:value.number="exportNote.payment.alreadyPaid"
 			addon-after=".000 vnđ"
 			type="number"
-			class="w-2/4 flex-none"
+			class="flex-auto"
 		></a-input>
 	</div>
 	<div class="flex items-center mb-4">
 		<div class="w-120px flex-none">Hình thức</div>
 		<a-radio-group v-model:value="exportNote.payment.method" class="flex-auto">
-			<a-radio v-for="(method, index) in UTILS_EXPORTNOTES.payment.method" :key="index" :value="method">
+			<a-radio
+				v-for="(method, index) in UTILS_EXPORTNOTES.payment.method"
+				:key="index"
+				:value="method"
+			>
 				{{ method }}
 			</a-radio>
 		</a-radio-group>
@@ -64,14 +74,19 @@
 			Back
 		</a-button>
 		<div>
-			<a-button :loading="loadingActionExportNote" @click="startCreateExportNote" type="primary">
+			<a-button
+				v-if="!exportNote.exportNoteID"
+				:loading="loadingActionExportNote"
+				@click="startCreateExportNote"
+				type="primary"
+			>
 				Tạo đơn hàng mới
 			</a-button>
 			<a-button
 				v-if="exportNote.exportNoteID"
 				@click="startUpdateExportNote"
 				:loading="loadingActionExportNote"
-				class="ml-2"
+				type="primary"
 			>
 				Cập nhật đơn hàng
 			</a-button>
@@ -85,7 +100,11 @@ import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { goodsList } from '@/firebase/useWarehouse'
-import { startRealtimeExportNote, addExportNotePending, updateExportNotePending } from '@/firebase/useExportNote'
+import {
+	startRealtimeExportNote,
+	addExportNotePending,
+	updateExportNotePending,
+} from '@/firebase/useExportNote'
 import InputSearchCustomer from '@/components/common/InputSearchCustomer.vue'
 import ExportNoteTableGoods from '@/components/export-note/ExportNoteTableGoods.vue'
 import ModalAddStockOut from '@/components/export-note/export-note-create-modify/ModalAddStockOut.vue'
@@ -122,7 +141,9 @@ export default {
 				}, 0)
 				return accGoods + eachGoods
 			}, 0)
-			if (this.exportNote.shipping.whoPays === 'Buyer') totalPrice += this.exportNote.shipping.cost
+			if (this.exportNote.shipping.whoPays === 'Buyer') {
+				totalPrice += this.exportNote.shipping.cost
+			}
 			return totalPrice
 		},
 	},
@@ -133,7 +154,9 @@ export default {
 	},
 	methods: {
 		editStockOut({ goodsID, batchKey }) {
-			const { expectedPrice, actualPrice, quantity } = this.exportNote.stockOut[goodsID][batchKey]
+			const { expectedPrice, actualPrice, quantity } = this.exportNote.stockOut[goodsID][
+				batchKey
+			]
 			const expiryDate = Number(batchKey.split('-')[0])
 			const costPrice = Number(batchKey.split('-')[1])
 			this.$refs.modalAddStockOut.openModal({
@@ -159,7 +182,9 @@ export default {
 
 			if (!this.exportNote.stockOut[goodsID]) this.exportNote.stockOut[goodsID] = {}
 			const batch = `${expiryDate}-${costPrice}`
-			if (!this.exportNote.stockOut[goodsID][batch]) this.exportNote.stockOut[goodsID][batch] = {}
+			if (!this.exportNote.stockOut[goodsID][batch]) {
+				this.exportNote.stockOut[goodsID][batch] = {}
+			}
 			this.exportNote.stockOut[goodsID][batch] = {
 				quantity: (this.exportNote.stockOut[goodsID][batch].quantity || 0) + quantity,
 				expectedPrice,
@@ -202,7 +227,10 @@ export default {
 		async startUpdateExportNote() {
 			try {
 				this.loadingActionExportNote = true
-				const noteID = await updateExportNotePending(this.exportNote.exportNoteID, this.exportNote)
+				const noteID = await updateExportNotePending(
+					this.exportNote.exportNoteID,
+					this.exportNote,
+				)
 				message.success('Cập nhật đơn hàng thành công !!!', 2)
 				this.$router.push({ name: 'ExportNote Details', params: { id: noteID } })
 			} catch (error) {
