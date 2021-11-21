@@ -35,11 +35,13 @@ export default {
 	},
 	methods: {
 		onInputDay(e) {
-			this.refDay = Number(e) > 31 ? e.slice(-1) : e
+			const d = Number(e) > 31 ? e.slice(-1) : e
+			this.refDay = `0${d}`.slice(-2)
 			this.emitParent()
 		},
 		onInputMonth(e) {
-			this.refMonth = Number(e) > 12 ? e.slice(-1) : e
+			const m = Number(e) > 12 ? e.slice(-1) : e
+			this.refMonth = `0${m}`.slice(-2)
 			this.emitParent()
 		},
 		onInputYear(e) {

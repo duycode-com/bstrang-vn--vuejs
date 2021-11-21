@@ -24,7 +24,7 @@ export default {
 	margin-bottom: 0.5rem;
 }
 .ant-input,
-.a-select-option {
+.ant-select-dropdown {
 	font-size: 16px;
 }
 </style>
